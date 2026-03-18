@@ -20,21 +20,18 @@ use Twig\TwigFunction;
 
 final class EntryFilesTwigExtension extends AbstractExtension
 {
-    private $container;
-
-    public function __construct(ContainerInterface $container)
+    public function __construct(private readonly ContainerInterface $container)
     {
-        $this->container = $container;
     }
 
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('encore_entry_js_files', [$this, 'getWebpackJsFiles']),
-            new TwigFunction('encore_entry_css_files', [$this, 'getWebpackCssFiles']),
-            new TwigFunction('encore_entry_script_tags', [$this, 'renderWebpackScriptTags'], ['is_safe' => ['html']]),
-            new TwigFunction('encore_entry_link_tags', [$this, 'renderWebpackLinkTags'], ['is_safe' => ['html']]),
-            new TwigFunction('encore_entry_exists', [$this, 'entryExists']),
+            new TwigFunction('encore_entry_js_files', $this->getWebpackJsFiles(...)),
+            new TwigFunction('encore_entry_css_files', $this->getWebpackCssFiles(...)),
+            new TwigFunction('encore_entry_script_tags', $this->renderWebpackScriptTags(...), ['is_safe' => ['html']]),
+            new TwigFunction('encore_entry_link_tags', $this->renderWebpackLinkTags(...), ['is_safe' => ['html']]),
+            new TwigFunction('encore_entry_exists', $this->entryExists(...)),
         ];
     }
 

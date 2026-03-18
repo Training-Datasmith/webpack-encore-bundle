@@ -25,27 +25,12 @@ use Symfony\WebpackEncoreBundle\Exception\EntrypointNotFoundException;
  */
 class EntrypointLookup implements EntrypointLookupInterface, IntegrityDataProviderInterface
 {
-    private $entrypointJsonPath;
-
     private $entriesData;
 
-    private $returnedFiles = [];
+    private array $returnedFiles = [];
 
-    private $cache;
-
-    private $cacheKey;
-
-    private $strictMode;
-
-    private $httpClient;
-
-    public function __construct(string $entrypointJsonPath, ?CacheItemPoolInterface $cache = null, ?string $cacheKey = null, bool $strictMode = true, ?HttpClientInterface $httpClient = null)
+    public function __construct(private readonly string $entrypointJsonPath, private readonly ?CacheItemPoolInterface $cache = null, private readonly ?string $cacheKey = null, private readonly bool $strictMode = true, private readonly ?HttpClientInterface $httpClient = null)
     {
-        $this->entrypointJsonPath = $entrypointJsonPath;
-        $this->cache = $cache;
-        $this->cacheKey = $cacheKey;
-        $this->strictMode = $strictMode;
-        $this->httpClient = $httpClient;
     }
 
     public function getJavaScriptFiles(string $entryName): array

@@ -49,7 +49,7 @@ final class WebpackEncoreExtension extends Extension
 
         foreach ($config['builds'] as $name => $path) {
             $factories[$name] = $this->entrypointFactory($container, $name, $path, $config['cache'], $config['strict_mode']);
-            $cacheKeys[rawurlencode($name)] = $path.'/'.self::ENTRYPOINTS_FILE_NAME;
+            $cacheKeys[rawurlencode((string) $name)] = $path.'/'.self::ENTRYPOINTS_FILE_NAME;
         }
 
         $container->getDefinition('webpack_encore.exception_listener')

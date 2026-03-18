@@ -26,9 +26,7 @@ final class Configuration implements ConfigurationInterface
 
         $rootNode
             ->validate()
-                ->ifTrue(function (array $v): bool {
-                    return false === $v['output_path'] && empty($v['builds']);
-                })
+                ->ifTrue(fn(array $v): bool => false === $v['output_path'] && empty($v['builds']))
                 ->thenInvalid('Default build can only be disabled if multiple entry points are defined.')
             ->end()
             ->children()
@@ -58,7 +56,7 @@ final class Configuration implements ConfigurationInterface
                     ->normalizeKeys(false)
                     ->scalarPrototype()
                         ->validate()
-                        ->always(function ($values) {
+                        ->always(function (array $values): array {
                             if (isset($values['_default'])) {
                                 throw new InvalidDefinitionException("Key '_default' can't be used as build name.");
                             }

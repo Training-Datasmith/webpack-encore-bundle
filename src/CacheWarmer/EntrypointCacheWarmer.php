@@ -19,13 +19,8 @@ use Symfony\WebpackEncoreBundle\Exception\EntrypointNotFoundException;
 
 class EntrypointCacheWarmer extends AbstractPhpFileCacheWarmer
 {
-    private $cacheKeys;
-    private $httpClient;
-
-    public function __construct(array $cacheKeys, ?HttpClientInterface $httpClient, string $phpArrayFile)
+    public function __construct(private readonly array $cacheKeys, private readonly ?HttpClientInterface $httpClient, string $phpArrayFile)
     {
-        $this->cacheKeys = $cacheKeys;
-        $this->httpClient = $httpClient;
         parent::__construct($phpArrayFile);
     }
 
@@ -33,7 +28,7 @@ class EntrypointCacheWarmer extends AbstractPhpFileCacheWarmer
     {
         foreach ($this->cacheKeys as $cacheKey => $path) {
             // If the file does not exist then just skip past this entry point.
-            if (!str_starts_with($path, 'http') && !file_exists($path)) {
+            if (!str_starts_with((string) $path, 'http') && !file_exists($path)) {
                 continue;
             }
 
@@ -41,7 +36,7 @@ class EntrypointCacheWarmer extends AbstractPhpFileCacheWarmer
 
             try {
                 $entryPointLookup->getJavaScriptFiles('dummy');
-            } catch (EntrypointNotFoundException $e) {
+            } catch (EntrypointNotFoundException) {
                 // ignore exception
             }
         }

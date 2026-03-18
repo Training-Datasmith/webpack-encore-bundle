@@ -22,11 +22,8 @@ use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
  */
 class PreLoadAssetsEventListener implements EventSubscriberInterface
 {
-    private $tagRenderer;
-
-    public function __construct(TagRenderer $tagRenderer)
+    public function __construct(private readonly TagRenderer $tagRenderer)
     {
-        $this->tagRenderer = $tagRenderer;
     }
 
     public function onKernelResponse(ResponseEvent $event): void

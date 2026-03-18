@@ -19,15 +19,8 @@ final class RenderAssetTagEvent
     public const TYPE_SCRIPT = 'script';
     public const TYPE_LINK = 'link';
 
-    private $type;
-    private $url;
-    private $attributes;
-
-    public function __construct(string $type, string $url, array $attributes)
+    public function __construct(private readonly string $type, private readonly string $url, private array $attributes)
     {
-        $this->type = $type;
-        $this->url = $url;
-        $this->attributes = $attributes;
     }
 
     public function isScriptTag(): bool

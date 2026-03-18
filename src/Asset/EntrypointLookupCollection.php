@@ -23,14 +23,8 @@ use Symfony\WebpackEncoreBundle\Exception\UndefinedBuildException;
  */
 class EntrypointLookupCollection implements EntrypointLookupCollectionInterface
 {
-    private $buildEntrypoints;
-
-    private $defaultBuildName;
-
-    public function __construct(ContainerInterface $buildEntrypoints, ?string $defaultBuildName = null)
+    public function __construct(private readonly ContainerInterface $buildEntrypoints, private readonly ?string $defaultBuildName = null)
     {
-        $this->buildEntrypoints = $buildEntrypoints;
-        $this->defaultBuildName = $defaultBuildName;
     }
 
     public function getEntrypointLookup(?string $buildName = null): EntrypointLookupInterface

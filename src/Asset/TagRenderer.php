@@ -21,32 +21,22 @@ use Symfony\WebpackEncoreBundle\Event\RenderAssetTagEvent;
  */
 class TagRenderer implements ResetInterface
 {
-    private $entrypointLookupCollection;
     private $packages;
-    private $defaultAttributes;
-    private $defaultScriptAttributes;
-    private $defaultLinkAttributes;
-    private $eventDispatcher;
 
     // TODO WebpackEncoreBundle 3.0: remove this property
-    private $renderedFiles = [];
+    private array $renderedFiles = [];
     // TODO WebpackEncoreBundle 3.0: rename this property to $renderedFiles
-    private $renderedFilesWithAttributes = [];
+    private array $renderedFilesWithAttributes = [];
 
     public function __construct(
-        EntrypointLookupCollectionInterface $entrypointLookupCollection,
+        private readonly EntrypointLookupCollectionInterface $entrypointLookupCollection,
         Packages $packages,
-        array $defaultAttributes = [],
-        array $defaultScriptAttributes = [],
-        array $defaultLinkAttributes = [],
-        ?EventDispatcherInterface $eventDispatcher = null,
+        private readonly array $defaultAttributes = [],
+        private readonly array $defaultScriptAttributes = [],
+        private readonly array $defaultLinkAttributes = [],
+        private readonly ?EventDispatcherInterface $eventDispatcher = null,
     ) {
-        $this->entrypointLookupCollection = $entrypointLookupCollection;
         $this->packages = $packages;
-        $this->defaultAttributes = $defaultAttributes;
-        $this->defaultScriptAttributes = $defaultScriptAttributes;
-        $this->defaultLinkAttributes = $defaultLinkAttributes;
-        $this->eventDispatcher = $eventDispatcher;
 
         $this->reset();
     }
@@ -187,14 +177,12 @@ class TagRenderer implements ResetInterface
     private function convertArrayToAttributes(array $attributesMap): string
     {
         // remove attributes set specifically to false
-        $attributesMap = array_filter($attributesMap, static function ($value) {
-            return false !== $value;
-        });
+        $attributesMap = array_filter($attributesMap, static fn($value) => false !== $value);
 
         return implode(' ', array_map(
-            static function ($key, $value) {
+            static function (string $key, int|string $value): string {
                 // allows for things like defer: true to only render "defer"
-                if (true === $value || null === $value) {
+                if (null === $value) {
                     return $key;
                 }
 

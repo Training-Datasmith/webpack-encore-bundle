@@ -20,13 +20,8 @@ use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupCollection;
 
 class ResetAssetsEventListener implements EventSubscriberInterface
 {
-    private $entrypointLookupCollection;
-    private $buildNames;
-
-    public function __construct(EntrypointLookupCollection $entrypointLookupCollection, array $buildNames)
+    public function __construct(private readonly EntrypointLookupCollection $entrypointLookupCollection, private readonly array $buildNames)
     {
-        $this->entrypointLookupCollection = $entrypointLookupCollection;
-        $this->buildNames = $buildNames;
     }
 
     public static function getSubscribedEvents(): array
