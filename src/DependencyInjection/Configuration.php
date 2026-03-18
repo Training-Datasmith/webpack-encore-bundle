@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -26,7 +28,7 @@ final class Configuration implements ConfigurationInterface
 
         $rootNode
             ->validate()
-                ->ifTrue(fn(array $v): bool => false === $v['output_path'] && empty($v['builds']))
+                ->ifTrue(fn (array $v): bool => false === $v['output_path'] && empty($v['builds']))
                 ->thenInvalid('Default build can only be disabled if multiple entry points are defined.')
             ->end()
             ->children()

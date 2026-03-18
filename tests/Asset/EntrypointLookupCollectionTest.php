@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -39,7 +41,9 @@ class EntrypointLookupCollectionTest extends TestCase
     public function testDefaultBuildIsReturned()
     {
         $lookup = $this->createMock(EntrypointLookupInterface::class);
-        $collection = new EntrypointLookupCollection(new ServiceLocator(['the_default' => function () use ($lookup) { return $lookup; }]), 'the_default');
+        $collection = new EntrypointLookupCollection(new ServiceLocator(['the_default' => function () use ($lookup) {
+            return $lookup;
+        }]), 'the_default');
 
         $this->assertSame($lookup, $collection->getEntrypointLookup());
     }

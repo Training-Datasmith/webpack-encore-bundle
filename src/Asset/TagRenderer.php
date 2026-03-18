@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -177,7 +179,7 @@ class TagRenderer implements ResetInterface
     private function convertArrayToAttributes(array $attributesMap): string
     {
         // remove attributes set specifically to false
-        $attributesMap = array_filter($attributesMap, static fn($value) => false !== $value);
+        $attributesMap = array_filter($attributesMap, static fn ($value) => false !== $value);
 
         return implode(' ', array_map(
             static function (string $key, int|string $value): string {
