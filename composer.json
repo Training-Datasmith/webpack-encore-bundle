@@ -27,12 +27,12 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "Symfony\\WebpackEncoreBundle\\": "src"
+            "Symfony\\Webpack_Encore_Bundle\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Symfony\\WebpackEncoreBundle\\Tests\\": "tests/"
+            "Symfony\\Webpack_Encore_Bundle\\Tests\\": "tests/"
         }
     },
     "extra": {
