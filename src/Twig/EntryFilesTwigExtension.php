@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -10,74 +9,52 @@ declare(strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+namespace Symfony\Webpack_Encore_Bundle\Twig;
 
-namespace Symfony\WebpackEncoreBundle\Twig;
-
-use Psr\Container\ContainerInterface;
-use Symfony\WebpackEncoreBundle\Asset\EntrypointLookup;
-use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupInterface;
-use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
-
-final class EntryFilesTwigExtension extends AbstractExtension
+use Psr\Container\Container_Interface;
+use Symfony\Webpack_Encore_Bundle\Asset\Entrypoint_Lookup;
+use Symfony\Webpack_Encore_Bundle\Asset\Entrypoint_Lookup_Interface;
+use Symfony\Webpack_Encore_Bundle\Asset\Tag_Renderer;
+use Twig\Extension\Abstract_Extension;
+use Twig\Twig_Function;
+final class Entry_Files_Twig_Extension extends Abstract_Extension
 {
-    public function __construct(private readonly ContainerInterface $container)
+    public function __construct(private readonly Container_Interface $container)
     {
     }
-
-    public function getFunctions(): array
+    public function get_functions(): array
     {
-        return [
-            new TwigFunction('encore_entry_js_files', $this->getWebpackJsFiles(...)),
-            new TwigFunction('encore_entry_css_files', $this->getWebpackCssFiles(...)),
-            new TwigFunction('encore_entry_script_tags', $this->renderWebpackScriptTags(...), ['is_safe' => ['html']]),
-            new TwigFunction('encore_entry_link_tags', $this->renderWebpackLinkTags(...), ['is_safe' => ['html']]),
-            new TwigFunction('encore_entry_exists', $this->entryExists(...)),
-        ];
+        return [new Twig_Function('encore_entry_js_files', $this->get_webpack_js_files(...)), new Twig_Function('encore_entry_css_files', $this->get_webpack_css_files(...)), new Twig_Function('encore_entry_script_tags', $this->render_webpack_script_tags(...), ['is_safe' => ['html']]), new Twig_Function('encore_entry_link_tags', $this->render_webpack_link_tags(...), ['is_safe' => ['html']]), new Twig_Function('encore_entry_exists', $this->entry_exists(...))];
     }
-
-    public function getWebpackJsFiles(string $entryName, string $entrypointName = '_default'): array
+    public function get_webpack_js_files(string $entry_name, string $entrypoint_name = '_default'): array
     {
-        return $this->getEntrypointLookup($entrypointName)
-            ->getJavaScriptFiles($entryName);
+        return $this->get_entrypoint_lookup($entrypoint_name)->get_java_script_files($entry_name);
     }
-
-    public function getWebpackCssFiles(string $entryName, string $entrypointName = '_default'): array
+    public function get_webpack_css_files(string $entry_name, string $entrypoint_name = '_default'): array
     {
-        return $this->getEntrypointLookup($entrypointName)
-            ->getCssFiles($entryName);
+        return $this->get_entrypoint_lookup($entrypoint_name)->get_css_files($entry_name);
     }
-
-    public function renderWebpackScriptTags(string $entryName, ?string $packageName = null, string $entrypointName = '_default', array $attributes = []): string
+    public function render_webpack_script_tags(string $entry_name, ?string $package_name = null, string $entrypoint_name = '_default', array $attributes = []): string
     {
-        return $this->getTagRenderer()
-            ->renderWebpackScriptTags($entryName, $packageName, $entrypointName, $attributes);
+        return $this->get_tag_renderer()->render_webpack_script_tags($entry_name, $package_name, $entrypoint_name, $attributes);
     }
-
-    public function renderWebpackLinkTags(string $entryName, ?string $packageName = null, string $entrypointName = '_default', array $attributes = []): string
+    public function render_webpack_link_tags(string $entry_name, ?string $package_name = null, string $entrypoint_name = '_default', array $attributes = []): string
     {
-        return $this->getTagRenderer()
-            ->renderWebpackLinkTags($entryName, $packageName, $entrypointName, $attributes);
+        return $this->get_tag_renderer()->render_webpack_link_tags($entry_name, $package_name, $entrypoint_name, $attributes);
     }
-
-    public function entryExists(string $entryName, string $entrypointName = '_default'): bool
+    public function entry_exists(string $entry_name, string $entrypoint_name = '_default'): bool
     {
-        $entrypointLookup = $this->getEntrypointLookup($entrypointName);
-        if (!$entrypointLookup instanceof EntrypointLookup) {
-            throw new \LogicException(\sprintf('Cannot use entryExists() unless the entrypoint lookup is an instance of "%s"', EntrypointLookup::class));
+        $entrypoint_lookup = $this->get_entrypoint_lookup($entrypoint_name);
+        if (!$entrypoint_lookup instanceof Entrypoint_Lookup) {
+            throw new \LogicException(\sprintf('Cannot use entryExists() unless the entrypoint lookup is an instance of "%s"', Entrypoint_Lookup::class));
         }
-
-        return $entrypointLookup->entryExists($entryName);
+        return $entrypoint_lookup->entry_exists($entry_name);
     }
-
-    private function getEntrypointLookup(string $entrypointName): EntrypointLookupInterface
+    private function get_entrypoint_lookup(string $entrypoint_name): Entrypoint_Lookup_Interface
     {
-        return $this->container->get('webpack_encore.entrypoint_lookup_collection')
-            ->getEntrypointLookup($entrypointName);
+        return $this->container->get('webpack_encore.entrypoint_lookup_collection')->get_entrypoint_lookup($entrypoint_name);
     }
-
-    private function getTagRenderer(): TagRenderer
+    private function get_tag_renderer(): Tag_Renderer
     {
         return $this->container->get('webpack_encore.tag_renderer');
     }

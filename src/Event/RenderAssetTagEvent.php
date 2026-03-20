@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -10,51 +9,43 @@ declare(strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
-namespace Symfony\WebpackEncoreBundle\Event;
+namespace Symfony\Webpack_Encore_Bundle\Event;
 
 /**
  * Dispatched each time a script or link tag is rendered.
  */
-final class RenderAssetTagEvent
+final class Render_Asset_Tag_Event
 {
     public const TYPE_SCRIPT = 'script';
     public const TYPE_LINK = 'link';
-
     public function __construct(private readonly string $type, private readonly string $url, private array $attributes)
     {
     }
-
-    public function isScriptTag(): bool
+    public function is_script_tag(): bool
     {
         return self::TYPE_SCRIPT === $this->type;
     }
-
-    public function isLinkTag(): bool
+    public function is_link_tag(): bool
     {
         return self::TYPE_LINK === $this->type;
     }
-
-    public function getUrl(): string
+    public function get_url(): string
     {
         return $this->url;
     }
-
-    public function getAttributes(): array
+    public function get_attributes(): array
     {
         return $this->attributes;
     }
-
     /**
      * @param string      $name  The attribute name
      * @param string|bool $value Value can be "true" to have an attribute without a value (e.g. "defer")
      */
-    public function setAttribute(string $name, $value): void
+    public function set_attribute(string $name, $value): void
     {
         $this->attributes[$name] = $value;
     }
-
-    public function removeAttribute(string $name): void
+    public function remove_attribute(string $name): void
     {
         unset($this->attributes[$name]);
     }

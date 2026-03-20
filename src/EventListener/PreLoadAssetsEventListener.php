@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -10,84 +9,63 @@ declare(strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+namespace Symfony\Webpack_Encore_Bundle\Event_Listener;
 
-namespace Symfony\WebpackEncoreBundle\EventListener;
-
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\ResponseEvent;
-use Symfony\Component\WebLink\GenericLinkProvider;
-use Symfony\Component\WebLink\Link;
-use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
-
+use Symfony\Component\Event_Dispatcher\Event_Subscriber_Interface;
+use Symfony\Component\Http_Kernel\Event\Response_Event;
+use Symfony\Component\Web_Link\Generic_Link_Provider;
+use Symfony\Component\Web_Link\Link;
+use Symfony\Webpack_Encore_Bundle\Asset\Tag_Renderer;
 /**
  * @author Ryan Weaver <ryan@symfonycasts.com>
  */
-class PreLoadAssetsEventListener implements EventSubscriberInterface
+class Pre_Load_Assets_Event_Listener implements Event_Subscriber_Interface
 {
-    public function __construct(private readonly TagRenderer $tagRenderer)
+    public function __construct(private readonly Tag_Renderer $tag_renderer)
     {
     }
-
-    public function onKernelResponse(ResponseEvent $event): void
+    public function on_kernel_response(Response_Event $event): void
     {
-        if (!$event->isMainRequest()) {
+        if (!$event->is_main_request()) {
             return;
         }
-
-        $request = $event->getRequest();
-
-        if (null === $linkProvider = $request->attributes->get('_links')) {
-            $request->attributes->set(
-                '_links',
-                new GenericLinkProvider()
-            );
+        $request = $event->get_request();
+        if (null === $link_provider = $request->attributes->get('_links')) {
+            $request->attributes->set('_links', new Generic_Link_Provider());
         }
-
         /** @var GenericLinkProvider $linkProvider */
-        $linkProvider = $request->attributes->get('_links');
-        $defaultAttributes = $this->tagRenderer->getDefaultAttributes();
-
-        foreach ($this->tagRenderer->getRenderedScripts(true) as $attributes) {
+        $link_provider = $request->attributes->get('_links');
+        $default_attributes = $this->tag_renderer->get_default_attributes();
+        foreach ($this->tag_renderer->get_rendered_scripts(true) as $attributes) {
             $src = $attributes['src'];
             unset($attributes['src']);
-            $attributes = [...$defaultAttributes, ...$attributes];
-
-            $link = $this->createLink('preload', $src)
-                ->withAttribute('as', 'script');
-
+            $attributes = [...$default_attributes, ...$attributes];
+            $link = $this->create_link('preload', $src)->with_attribute('as', 'script');
             foreach ($attributes as $k => $v) {
-                $link = $link->withAttribute($k, $v);
+                $link = $link->with_attribute($k, $v);
             }
-
-            $linkProvider = $linkProvider->withLink($link);
+            $link_provider = $link_provider->with_link($link);
         }
-
-        foreach ($this->tagRenderer->getRenderedStyles(true) as $attributes) {
+        foreach ($this->tag_renderer->get_rendered_styles(true) as $attributes) {
             $href = $attributes['href'];
             unset($attributes['href']);
-            $attributes = [...$defaultAttributes, ...$attributes];
-
-            $link = $this->createLink('preload', $href)->withAttribute('as', 'style');
-
+            $attributes = [...$default_attributes, ...$attributes];
+            $link = $this->create_link('preload', $href)->with_attribute('as', 'style');
             foreach ($attributes as $k => $v) {
-                $link = $link->withAttribute($k, $v);
+                $link = $link->with_attribute($k, $v);
             }
-
-            $linkProvider = $linkProvider->withLink($link);
+            $link_provider = $link_provider->with_link($link);
         }
-
-        $request->attributes->set('_links', $linkProvider);
+        $request->attributes->set('_links', $link_provider);
     }
-
-    public static function getSubscribedEvents(): array
+    public static function get_subscribed_events(): array
     {
         return [
             // must run before AddLinkHeaderListener
             'kernel.response' => ['onKernelResponse', 50],
         ];
     }
-
-    private function createLink(string $rel, string $href): Link
+    private function create_link(string $rel, string $href): Link
     {
         return new Link($rel, $href);
     }

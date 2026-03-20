@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -10,116 +9,76 @@ declare(strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
-namespace Symfony\WebpackEncoreBundle\Asset;
+namespace Symfony\Webpack_Encore_Bundle\Asset;
 
 use Symfony\Component\Asset\Packages;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Service\ResetInterface;
-use Symfony\WebpackEncoreBundle\Event\RenderAssetTagEvent;
-
+use Symfony\Contracts\Event_Dispatcher\Event_Dispatcher_Interface;
+use Symfony\Contracts\Service\Reset_Interface;
+use Symfony\Webpack_Encore_Bundle\Event\Render_Asset_Tag_Event;
 /**
  * @final
  */
-class TagRenderer implements ResetInterface
+class Tag_Renderer implements Reset_Interface
 {
     private $packages;
-
     // TODO WebpackEncoreBundle 3.0: remove this property
-    private array $renderedFiles = [];
+    private array $rendered_files = [];
     // TODO WebpackEncoreBundle 3.0: rename this property to $renderedFiles
-    private array $renderedFilesWithAttributes = [];
-
-    public function __construct(
-        private readonly EntrypointLookupCollectionInterface $entrypointLookupCollection,
-        Packages $packages,
-        private readonly array $defaultAttributes = [],
-        private readonly array $defaultScriptAttributes = [],
-        private readonly array $defaultLinkAttributes = [],
-        private readonly ?EventDispatcherInterface $eventDispatcher = null,
-    ) {
+    private array $rendered_files_with_attributes = [];
+    public function __construct(private readonly Entrypoint_Lookup_Collection_Interface $entrypoint_lookup_collection, Packages $packages, private readonly array $default_attributes = [], private readonly array $default_script_attributes = [], private readonly array $default_link_attributes = [], private readonly ?Event_Dispatcher_Interface $event_dispatcher = null)
+    {
         $this->packages = $packages;
-
         $this->reset();
     }
-
-    public function renderWebpackScriptTags(string $entryName, ?string $packageName = null, ?string $entrypointName = null, array $extraAttributes = [], bool $includeAttributes = false): string
+    public function render_webpack_script_tags(string $entry_name, ?string $package_name = null, ?string $entrypoint_name = null, array $extra_attributes = [], bool $include_attributes = false): string
     {
-        $entrypointName = $entrypointName ?: '_default';
-        $scriptTags = [];
-        $entryPointLookup = $this->getEntrypointLookup($entrypointName);
-        $integrityHashes = ($entryPointLookup instanceof IntegrityDataProviderInterface) ? $entryPointLookup->getIntegrityData() : [];
-
-        foreach ($entryPointLookup->getJavaScriptFiles($entryName) as $filename) {
+        $entrypoint_name = $entrypoint_name ?: '_default';
+        $script_tags = [];
+        $entry_point_lookup = $this->get_entrypoint_lookup($entrypoint_name);
+        $integrity_hashes = $entry_point_lookup instanceof Integrity_Data_Provider_Interface ? $entry_point_lookup->get_integrity_data() : [];
+        foreach ($entry_point_lookup->get_java_script_files($entry_name) as $filename) {
             $attributes = [];
-            $attributes['src'] = $this->getAssetPath($filename, $packageName);
-            $attributes = array_merge($attributes, $this->defaultAttributes, $this->defaultScriptAttributes, $extraAttributes);
-
-            if (isset($integrityHashes[$filename])) {
-                $attributes['integrity'] = $integrityHashes[$filename];
+            $attributes['src'] = $this->get_asset_path($filename, $package_name);
+            $attributes = array_merge($attributes, $this->default_attributes, $this->default_script_attributes, $extra_attributes);
+            if (isset($integrity_hashes[$filename])) {
+                $attributes['integrity'] = $integrity_hashes[$filename];
             }
-
-            $event = new RenderAssetTagEvent(
-                RenderAssetTagEvent::TYPE_SCRIPT,
-                $attributes['src'],
-                $attributes
-            );
-            if (null !== $this->eventDispatcher) {
-                $event = $this->eventDispatcher->dispatch($event);
+            $event = new Render_Asset_Tag_Event(Render_Asset_Tag_Event::TYPE_SCRIPT, $attributes['src'], $attributes);
+            if (null !== $this->event_dispatcher) {
+                $event = $this->event_dispatcher->dispatch($event);
             }
-            $attributes = $event->getAttributes();
-
-            $scriptTags[] = \sprintf(
-                '<script %s></script>',
-                $this->convertArrayToAttributes($attributes)
-            );
-
-            $this->renderedFiles['scripts'][] = $attributes['src'];
-            $this->renderedFilesWithAttributes['scripts'][] = $attributes;
+            $attributes = $event->get_attributes();
+            $script_tags[] = \sprintf('<script %s></script>', $this->convert_array_to_attributes($attributes));
+            $this->rendered_files['scripts'][] = $attributes['src'];
+            $this->rendered_files_with_attributes['scripts'][] = $attributes;
         }
-
-        return implode('', $scriptTags);
+        return implode('', $script_tags);
     }
-
-    public function renderWebpackLinkTags(string $entryName, ?string $packageName = null, ?string $entrypointName = null, array $extraAttributes = []): string
+    public function render_webpack_link_tags(string $entry_name, ?string $package_name = null, ?string $entrypoint_name = null, array $extra_attributes = []): string
     {
-        $entrypointName = $entrypointName ?: '_default';
-        $scriptTags = [];
-        $entryPointLookup = $this->getEntrypointLookup($entrypointName);
-        $integrityHashes = ($entryPointLookup instanceof IntegrityDataProviderInterface) ? $entryPointLookup->getIntegrityData() : [];
-
-        foreach ($entryPointLookup->getCssFiles($entryName) as $filename) {
+        $entrypoint_name = $entrypoint_name ?: '_default';
+        $script_tags = [];
+        $entry_point_lookup = $this->get_entrypoint_lookup($entrypoint_name);
+        $integrity_hashes = $entry_point_lookup instanceof Integrity_Data_Provider_Interface ? $entry_point_lookup->get_integrity_data() : [];
+        foreach ($entry_point_lookup->get_css_files($entry_name) as $filename) {
             $attributes = [];
             $attributes['rel'] = 'stylesheet';
-            $attributes['href'] = $this->getAssetPath($filename, $packageName);
-            $attributes = array_merge($attributes, $this->defaultAttributes, $this->defaultLinkAttributes, $extraAttributes);
-
-            if (isset($integrityHashes[$filename])) {
-                $attributes['integrity'] = $integrityHashes[$filename];
+            $attributes['href'] = $this->get_asset_path($filename, $package_name);
+            $attributes = array_merge($attributes, $this->default_attributes, $this->default_link_attributes, $extra_attributes);
+            if (isset($integrity_hashes[$filename])) {
+                $attributes['integrity'] = $integrity_hashes[$filename];
             }
-
-            $event = new RenderAssetTagEvent(
-                RenderAssetTagEvent::TYPE_LINK,
-                $attributes['href'],
-                $attributes
-            );
-            if (null !== $this->eventDispatcher) {
-                $this->eventDispatcher->dispatch($event);
+            $event = new Render_Asset_Tag_Event(Render_Asset_Tag_Event::TYPE_LINK, $attributes['href'], $attributes);
+            if (null !== $this->event_dispatcher) {
+                $this->event_dispatcher->dispatch($event);
             }
-            $attributes = $event->getAttributes();
-
-            $scriptTags[] = \sprintf(
-                '<link %s>',
-                $this->convertArrayToAttributes($attributes)
-            );
-
-            $this->renderedFiles['styles'][] = $attributes['href'];
-            $this->renderedFilesWithAttributes['styles'][] = $attributes;
+            $attributes = $event->get_attributes();
+            $script_tags[] = \sprintf('<link %s>', $this->convert_array_to_attributes($attributes));
+            $this->rendered_files['styles'][] = $attributes['href'];
+            $this->rendered_files_with_attributes['styles'][] = $attributes;
         }
-
-        return implode('', $scriptTags);
+        return implode('', $script_tags);
     }
-
     /**
      * @param bool $includeAttributes Whether to include the attributes or not.
      *                                In WebpackEncoreBundle 3.0, this parameter will be removed,
@@ -128,11 +87,10 @@ class TagRenderer implements ResetInterface
      *
      * @return ($includeAttributes is true ? list<array<string, mixed>> : list<string>)
      */
-    public function getRenderedScripts(bool $includeAttributes = false): array
+    public function get_rendered_scripts(bool $include_attributes = false): array
     {
-        return $includeAttributes ? $this->renderedFilesWithAttributes['scripts'] : $this->renderedFiles['scripts'];
+        return $include_attributes ? $this->rendered_files_with_attributes['scripts'] : $this->rendered_files['scripts'];
     }
-
     /**
      * @param bool $includeAttributes Whether to include the attributes or not.
      *                                In WebpackEncoreBundle 3.0, this parameter will be removed,
@@ -141,57 +99,39 @@ class TagRenderer implements ResetInterface
      *
      * @return ($includeAttributes is true ? list<array<string, mixed>> : list<string>)
      */
-    public function getRenderedStyles(bool $includeAttributes = false): array
+    public function get_rendered_styles(bool $include_attributes = false): array
     {
-        return $includeAttributes ? $this->renderedFilesWithAttributes['styles'] : $this->renderedFiles['styles'];
+        return $include_attributes ? $this->rendered_files_with_attributes['styles'] : $this->rendered_files['styles'];
     }
-
-    public function getDefaultAttributes(): array
+    public function get_default_attributes(): array
     {
-        return $this->defaultAttributes;
+        return $this->default_attributes;
     }
-
     public function reset(): void
     {
-        $this->renderedFiles = $this->renderedFilesWithAttributes = [
-            'scripts' => [],
-            'styles' => [],
-        ];
+        $this->rendered_files = $this->rendered_files_with_attributes = ['scripts' => [], 'styles' => []];
     }
-
-    private function getAssetPath(string $assetPath, ?string $packageName = null): string
+    private function get_asset_path(string $asset_path, ?string $package_name = null): string
     {
         if (null === $this->packages) {
             throw new \Exception('To render the script or link tags, run "composer require symfony/asset".');
         }
-
-        return $this->packages->getUrl(
-            $assetPath,
-            $packageName
-        );
+        return $this->packages->get_url($asset_path, $package_name);
     }
-
-    private function getEntrypointLookup(string $buildName): EntrypointLookupInterface
+    private function get_entrypoint_lookup(string $build_name): Entrypoint_Lookup_Interface
     {
-        return $this->entrypointLookupCollection->getEntrypointLookup($buildName);
+        return $this->entrypoint_lookup_collection->get_entrypoint_lookup($build_name);
     }
-
-    private function convertArrayToAttributes(array $attributesMap): string
+    private function convert_array_to_attributes(array $attributes_map): string
     {
         // remove attributes set specifically to false
-        $attributesMap = array_filter($attributesMap, static fn ($value) => false !== $value);
-
-        return implode(' ', array_map(
-            static function (string $key, int|string $value): string {
-                // allows for things like defer: true to only render "defer"
-                if (null === $value) {
-                    return $key;
-                }
-
-                return \sprintf('%s="%s"', $key, htmlentities($value));
-            },
-            array_keys($attributesMap),
-            $attributesMap
-        ));
+        $attributes_map = array_filter($attributes_map, static fn($value) => false !== $value);
+        return implode(' ', array_map(static function (string $key, int|string $value): string {
+            // allows for things like defer: true to only render "defer"
+            if (null === $value) {
+                return $key;
+            }
+            return \sprintf('%s="%s"', $key, htmlentities($value));
+        }, array_keys($attributes_map), $attributes_map));
     }
 }

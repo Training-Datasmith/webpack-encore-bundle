@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -10,10 +9,9 @@ declare(strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+namespace Symfony\Webpack_Encore_Bundle\Asset;
 
-namespace Symfony\WebpackEncoreBundle\Asset;
-
-interface IntegrityDataProviderInterface
+interface Integrity_Data_Provider_Interface
 {
     /**
      * Returns a map of integrity hashes indexed by asset paths.
@@ -29,5 +27,5 @@ interface IntegrityDataProviderInterface
      *
      * @return string[]
      */
-    public function getIntegrityData(): array;
+    public function get_integrity_data(): array;
 }

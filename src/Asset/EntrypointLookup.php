@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /*
  * This file is part of the Symfony WebpackEncoreBundle package.
  *
@@ -10,14 +9,12 @@ declare(strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+namespace Symfony\Webpack_Encore_Bundle\Asset;
 
-namespace Symfony\WebpackEncoreBundle\Asset;
-
-use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\WebpackEncoreBundle\Exception\EntrypointNotFoundException;
-
+use Psr\Cache\Cache_Item_Pool_Interface;
+use Symfony\Component\Http_Client\Http_Client;
+use Symfony\Contracts\Http_Client\Http_Client_Interface;
+use Symfony\Webpack_Encore_Bundle\Exception\Entrypoint_Not_Found_Exception;
 /**
  * Returns the CSS or JavaScript files needed for a Webpack entry.
  *
@@ -25,136 +22,108 @@ use Symfony\WebpackEncoreBundle\Exception\EntrypointNotFoundException;
  *
  * @final
  */
-class EntrypointLookup implements EntrypointLookupInterface, IntegrityDataProviderInterface
+class Entrypoint_Lookup implements Entrypoint_Lookup_Interface, Integrity_Data_Provider_Interface
 {
-    private $entriesData;
-
-    private array $returnedFiles = [];
-
-    public function __construct(private readonly string $entrypointJsonPath, private readonly ?CacheItemPoolInterface $cache = null, private readonly ?string $cacheKey = null, private readonly bool $strictMode = true, private readonly ?HttpClientInterface $httpClient = null)
+    private $entries_data;
+    private array $returned_files = [];
+    public function __construct(private readonly string $entrypoint_json_path, private readonly ?Cache_Item_Pool_Interface $cache = null, private readonly ?string $cache_key = null, private readonly bool $strict_mode = true, private readonly ?Http_Client_Interface $http_client = null)
     {
     }
-
-    public function getJavaScriptFiles(string $entryName): array
+    public function get_java_script_files(string $entry_name): array
     {
-        return $this->getEntryFiles($entryName, 'js');
+        return $this->get_entry_files($entry_name, 'js');
     }
-
-    public function getCssFiles(string $entryName): array
+    public function get_css_files(string $entry_name): array
     {
-        return $this->getEntryFiles($entryName, 'css');
+        return $this->get_entry_files($entry_name, 'css');
     }
-
-    public function getIntegrityData(): array
+    public function get_integrity_data(): array
     {
-        $entriesData = $this->getEntriesData();
-
-        if (!\array_key_exists('integrity', $entriesData)) {
+        $entries_data = $this->get_entries_data();
+        if (!\array_key_exists('integrity', $entries_data)) {
             return [];
         }
-
-        return $entriesData['integrity'];
+        return $entries_data['integrity'];
     }
-
     /**
      * Resets the state of this service.
      */
     public function reset(): void
     {
-        $this->returnedFiles = [];
+        $this->returned_files = [];
     }
-
-    private function getEntryFiles(string $entryName, string $key): array
+    private function get_entry_files(string $entry_name, string $key): array
     {
-        $this->validateEntryName($entryName);
-        $entriesData = $this->getEntriesData();
-        $entryData = $entriesData['entrypoints'][$entryName] ?? [];
-
-        if (!isset($entryData[$key])) {
+        $this->validate_entry_name($entry_name);
+        $entries_data = $this->get_entries_data();
+        $entry_data = $entries_data['entrypoints'][$entry_name] ?? [];
+        if (!isset($entry_data[$key])) {
             // If we don't find the file type then just send back nothing.
             return [];
         }
-
         // make sure to not return the same file multiple times
-        $entryFiles = $entryData[$key];
-        $newFiles = array_values(array_diff($entryFiles, $this->returnedFiles));
-        $this->returnedFiles = array_merge($this->returnedFiles, $newFiles);
-
-        return $newFiles;
+        $entry_files = $entry_data[$key];
+        $new_files = array_values(array_diff($entry_files, $this->returned_files));
+        $this->returned_files = array_merge($this->returned_files, $new_files);
+        return $new_files;
     }
-
-    private function validateEntryName(string $entryName): void
+    private function validate_entry_name(string $entry_name): void
     {
-        $entriesData = $this->getEntriesData();
-        if (!isset($entriesData['entrypoints'][$entryName]) && $this->strictMode) {
-            $withoutExtension = substr($entryName, 0, strrpos($entryName, '.'));
-
-            if (isset($entriesData['entrypoints'][$withoutExtension])) {
-                throw new EntrypointNotFoundException(\sprintf('Could not find the entry "%s". Try "%s" instead (without the extension).', $entryName, $withoutExtension));
+        $entries_data = $this->get_entries_data();
+        if (!isset($entries_data['entrypoints'][$entry_name]) && $this->strict_mode) {
+            $without_extension = substr($entry_name, 0, strrpos($entry_name, '.'));
+            if (isset($entries_data['entrypoints'][$without_extension])) {
+                throw new Entrypoint_Not_Found_Exception(\sprintf('Could not find the entry "%s". Try "%s" instead (without the extension).', $entry_name, $without_extension));
             }
-
-            throw new EntrypointNotFoundException(\sprintf('Could not find the entry "%s" in "%s". Found: %s.', $entryName, $this->entrypointJsonPath, implode(', ', array_keys($entriesData['entrypoints']))));
+            throw new Entrypoint_Not_Found_Exception(\sprintf('Could not find the entry "%s" in "%s". Found: %s.', $entry_name, $this->entrypoint_json_path, implode(', ', array_keys($entries_data['entrypoints']))));
         }
     }
-
-    private function getEntriesData(): array
+    private function get_entries_data(): array
     {
-        if (null !== $this->entriesData) {
-            return $this->entriesData;
+        if (null !== $this->entries_data) {
+            return $this->entries_data;
         }
-
         if ($this->cache) {
-            $cached = $this->cache->getItem($this->cacheKey);
-
-            if ($cached->isHit()) {
-                return $this->entriesData = $cached->get();
+            $cached = $this->cache->get_item($this->cache_key);
+            if ($cached->is_hit()) {
+                return $this->entries_data = $cached->get();
             }
         }
-
-        if (str_starts_with($this->entrypointJsonPath, 'http')) {
-            if (null === $this->httpClient && !class_exists(HttpClient::class)) {
-                throw new \LogicException(\sprintf('You cannot fetch the entrypoints file from URL "%s" as the HttpClient component is not installed. Try running "composer require symfony/http-client".', $this->entrypointJsonPath));
+        if (str_starts_with($this->entrypoint_json_path, 'http')) {
+            if (null === $this->http_client && !class_exists(Http_Client::class)) {
+                throw new \LogicException(\sprintf('You cannot fetch the entrypoints file from URL "%s" as the HttpClient component is not installed. Try running "composer require symfony/http-client".', $this->entrypoint_json_path));
             }
-            $httpClient = $this->httpClient ?? HttpClient::create();
-
-            $response = $httpClient->request('GET', $this->entrypointJsonPath);
-
-            if (200 !== $response->getStatusCode()) {
-                if (!$this->strictMode) {
+            $http_client = $this->http_client ?? Http_Client::create();
+            $response = $http_client->request('GET', $this->entrypoint_json_path);
+            if (200 !== $response->get_status_code()) {
+                if (!$this->strict_mode) {
                     return [];
                 }
-                throw new \InvalidArgumentException(\sprintf('Could not find the entrypoints file from URL "%s": the HTTP request failed with status code %d.', $this->entrypointJsonPath, $response->getStatusCode()));
+                throw new \InvalidArgumentException(\sprintf('Could not find the entrypoints file from URL "%s": the HTTP request failed with status code %d.', $this->entrypoint_json_path, $response->get_status_code()));
             }
-
-            $this->entriesData = $response->toArray();
-        } elseif (!file_exists($this->entrypointJsonPath)) {
-            if (!$this->strictMode) {
+            $this->entries_data = $response->to_array();
+        } elseif (!file_exists($this->entrypoint_json_path)) {
+            if (!$this->strict_mode) {
                 return [];
             }
-            throw new \InvalidArgumentException(\sprintf('Could not find the entrypoints file from Webpack: the file "%s" does not exist.', $this->entrypointJsonPath));
+            throw new \InvalidArgumentException(\sprintf('Could not find the entrypoints file from Webpack: the file "%s" does not exist.', $this->entrypoint_json_path));
         } else {
-            $this->entriesData = json_decode(file_get_contents($this->entrypointJsonPath), true);
+            $this->entries_data = json_decode(file_get_contents($this->entrypoint_json_path), true);
         }
-
-        if (null === $this->entriesData) {
-            throw new \InvalidArgumentException(\sprintf('There was a problem JSON decoding the "%s" file', $this->entrypointJsonPath));
+        if (null === $this->entries_data) {
+            throw new \InvalidArgumentException(\sprintf('There was a problem JSON decoding the "%s" file', $this->entrypoint_json_path));
         }
-
-        if (!isset($this->entriesData['entrypoints'])) {
-            throw new \InvalidArgumentException(\sprintf('Could not find an "entrypoints" key in the "%s" file', $this->entrypointJsonPath));
+        if (!isset($this->entries_data['entrypoints'])) {
+            throw new \InvalidArgumentException(\sprintf('Could not find an "entrypoints" key in the "%s" file', $this->entrypoint_json_path));
         }
-
         if (isset($cached)) {
-            $this->cache->save($cached->set($this->entriesData));
+            $this->cache->save($cached->set($this->entries_data));
         }
-
-        return $this->entriesData;
+        return $this->entries_data;
     }
-
-    public function entryExists(string $entryName): bool
+    public function entry_exists(string $entry_name): bool
     {
-        $entriesData = $this->getEntriesData();
-
-        return isset($entriesData['entrypoints'][$entryName]);
+        $entries_data = $this->get_entries_data();
+        return isset($entries_data['entrypoints'][$entry_name]);
     }
 }
